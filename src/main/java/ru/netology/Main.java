@@ -1,12 +1,12 @@
 package ru.netology;
 
+import com.opencsv.bean.ColumnPositionMappingStrategy;
+import com.opencsv.bean.CsvToBean;
+import com.opencsv.bean.CsvToBeanBuilder;
 
-import com.opencsv.CSVReader;
-import com.opencsv.exceptions.CsvValidationException;
 
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
@@ -14,29 +14,27 @@ public class Main {
         String[] columnMapping = {"id", "firstName", "lastName", "country", "age"};
         String fileName = "data.csv";
         List<Employee> list = parseCSV(columnMapping, fileName);
+        System.out.println(list);
     }
 
+
     private static List<Employee> parseCSV(String[] columnMapping, String fileName) {
-        List<Employee> employees = new ArrayList<>();
-        try {
-            CSVReader reader = new CSVReader(new FileReader(fileName));
-            String[] nextLine;
-            while ((nextLine = reader.readNext()) != null) {
-                Employee employee = new Employee(
-                        Long.parseLong(nextLine[0]), // id
-                        nextLine[1],                 // firstName
-                        nextLine[2],                 // lastName
-                        nextLine[3],                 // country
-                        Integer.parseInt(nextLine[4]) // age
-                );
-                employees.add(employee);
-            }
+        try (FileReader fileReader = new FileReader(fileName)) {
 
+            ColumnPositionMappingStrategy<Employee> strategy = new ColumnPositionMappingStrategy<>();
+            strategy.setType(Employee.class);
+            strategy.setColumnMapping(columnMapping);
 
-        } catch (IOException | CsvValidationException e) {
+            CsvToBean<Employee> csvToBean = new CsvToBeanBuilder<Employee>(fileReader)
+                    .withMappingStrategy(strategy)
+                    .withIgnoreLeadingWhiteSpace(true)
+                    .build();
+
+            return csvToBean.parse();
+        } catch (IOException e) {
             e.printStackTrace();
         }
-        return employees;
+        return List.of(); // Возвращаем пустой список в случае ошибки
     }
 }
 
