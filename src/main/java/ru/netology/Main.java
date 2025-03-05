@@ -6,20 +6,16 @@ import com.google.gson.reflect.TypeToken;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import org.w3c.dom.Element;
-import org.w3c.dom.Document;
-
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +31,32 @@ public class Main {
 
         List<Employee> listXML = parseXML("data.xml");
         writeString(listToJson(listXML), "data2.json");
+
+
+        String jsonTask3 = readString("new_data.json");
+        List<Employee> listTask3 = jsonToList(json);
     }
+
+    private static List<Employee> jsonToList(String json) {
+        Gson gson = new Gson();
+        Type listType = new TypeToken<List<Employee>>() {
+        }.getType();
+        return gson.fromJson(json, listType);
+    }
+
+    private static String readString(String fileName) {
+        StringBuilder json = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                json.append(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return json.toString();
+    }
+
 
     private static List<Employee> parseXML(String fileName) {
         List<Employee> employees = new ArrayList<>();
